@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- <script src="../node_modules/chart.js"></script> -->
+    <!-- <script src="../node_modules/chart.js/dist/plugins"></script> -->
+    
+    <title>Drill down chart</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        font-family: sans-serif;
+      }
+      .chartMenu {
+        width: 100vw;
+        height: 40px;
+        background: #1A1A1A;
+        color: rgba(54, 162, 235, 1);
+      }
+      .chartMenu p {
+        padding: 10px;
+        font-size: 20px;
+      }
+      .chartCard {
+        width: 100vw;
+        height: calc(100vh - 40px);
+        background: rgba(54, 162, 235, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .chartBox {
+        width: 700px;
+        padding: 20px;
+        border-radius: 20px;
+        border: solid 3px rgba(54, 162, 235, 1);
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="chartMenu">
+      <p>WWW.CHARTJS3.COM (Chart JS <span id="chartVersion"></span>)</p>
+    </div>
+    <div class="chartCard">
+      <div class="chartBox">
+        <canvas id="myChart"></canvas>
+      </div>
+    </div>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js/dist/chart.umd.min.js"></script>
+    <!-- <script type="../script/plugin.js"></script> -->
+    
+    <script>
+    // setup 
+
+    const coordinates = {
+      top:0,
+      bottom:0,
+      left:0,
+      right:0,
+    }
+
+    const browserData = [
+      { 
+        // 0
+        browser: 'Chrome', 
+        color: 'rgba(255, 26, 104, 0.2)',
+        borderColor:'rgba(255, 26, 104, 1)',
+        users: 150,
+        marketshare: 70,
+        versionData: [
+          {version: 'v5', users: 10},
+          {version: 'v6', users: 20},
+          {version: 'v7', users: 30},
+          {version: 'v8', users: 60},
+          {version: 'v9', users: 20},
+        ],
+      },
+      { 
+        // 1
+        browser: 'FireFox',
+        color: 'rgba(54, 162, 235, 0.2)',
+        borderColor:'rgba(54, 162, 235, 1)',
+        users: 25,
+        marketshare: 24,
+        versionData: [
+          {version: 'V3.1', users: 10},
+          {version: 'v3.2', users: 10},
+          {version: 'v3.3', users: 5},
+        ],
+      },    
+      { 
+        // 2
+        browser: 'Safari', 
+        color: 'rgba(255, 206, 86, 0.2)', 
+        borderColor:'rgba(255, 206, 86, 1)',
+        users: 30,
+        marketshare: 26,
+        versionData: [
+          {version: 'Web 9', users: 10},
+          {version: 'Web 10', users: 10},
+          {version: 'Web 11', users: 10},
+        ],
+      }   
+    ];
+    const data = {
+      // labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      datasets: [{
+        label: 'Market Share of Browsers',
+        data: browserData,
+        backgroundColor: [
+          browserData[0].color,
+          browserData[1].color,
+          browserData[2].color,
+        ],
+        borderColor: [
+          browserData[0].borderColor,
+          browserData[1].borderColor,
+          browserData[2].borderColor,
+        ],
+        borderWidth: 1
+      }]
+    };
+
+    //resetButton plugin
+  //   const resetButton = {
+  //   // Plugin options (if any)
+  //     id: 'resetButton',
+  //     beforeDraw:((chart, args, plugins)=>{
+  //         const {ctx, chartArea: {top, bottom, left, right, width, height} } = chart
+  //         console.log('test')
+  //         ctx.save()
+  //         ctx.strokeStyle = 'rgba(255, 26, 104, 1)'
+  //         ctx.strokeRect(left, top, width, height)
+  //         ctx.restore()
+  //   })
+  // }
+  const resetButton = {
+      // Plugin options (if any)
+      id: 'resetButton',
+      beforeDraw:((chart, args, options)=>{
+        if(myChart.config.data.datasets[0].label != 'Market Share of Browsers'){
+        
+          const {ctx, chartArea: {top, bottom, left, right, width, height} } = chart
+          console.log('test')
+
+          ctx.save()
+          const text = 'Back'
+          const thickBorder = 3
+          const textWidth = ctx.measureText(text).width
+
+          // background
+          ctx.fillStyle = 'rgba(255, 26, 104, 0.2)'
+          ctx.fillRect(right - (textWidth + 1 + 10), 5, textWidth + 10, 20)
+          
+
+          //draw text
+          ctx.fillStyle = '#666'
+          ctx.font = '12px Arial'
+          ctx.fillText(text, right - (textWidth + 1 + 5 ), 15)
+
+          //draw border
+          ctx.lineWidth = '3px'
+          ctx.strokeStyle = 'rgba(255, 26, 104, 1)'
+          ctx.strokeRect(right - (textWidth + 1 + 10), 5, textWidth + 10, 20)
+          console.log(coordinates)
+
+          //coordinates
+          coordinates.top = 5
+          coordinates.bottom = 25
+          coordinates.left = right - (textWidth + 1 + 10)
+          coordinates.right = right 
+
+          ctx.restore()
+        }
+        
+      })
+    }
+
+// config 
+    const config = {
+      type: 'bar',
+      data,
+      options: {
+        //plugins:[resetButton],
+        //   plugins:{
+        //     tooltip:{
+        //       yAlign: 'bottom'
+        //     }
+        // },
+        onHover:(event, chartElement) => {
+          if(myChart.config.data.datasets[0].label === 'Market Share of Browsers'){
+            // if my cursor is on a bar element show the default value
+            event.native.target.style.cursor = chartElement[0] ? 'pointer' : 'default'
+        }else{
+          event.native.target.style.cursor = 'default'
+        }
+
+        },
+        parsing:{
+          xAxisKey: 'browser',
+          yAxisKey: 'marketshare'
+        },
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        
+      },
+    };
+
+    ctx = document.getElementById('myChart')
+    // render init block
+    const myChart = new Chart(
+      ctx,
+      config,  
+    )
+
+    // Instantly assign Chart.js version
+    const chartVersion = document.getElementById('chartVersion')
+    chartVersion.innerText = Chart.version
+
+    // a handler does the same thing over and over
+    //change rhe chaet when click on a certain bar
+    function clickHandler (click){
+      if(myChart.config.data.datasets[0].label === 'Market Share of Browsers'){
+        //getElementsAtEventForMode: get the element that we click on at an event ( in our case event = click)
+        const bar = myChart.getElementsAtEventForMode(click, 'nearest', {intersect: true}, true)
+        console.log(bar)
+        if(bar.length){
+          console.log(bar[0].index)
+          changeChart(bar[0].index)
+        }
+      }
+    }
+
+    // change the chart when we click on a bar element function
+    function changeChart(browser){
+      //console.log(value + 'grabbed from clickHandler function')
+      myChart.config.options.parsing.xAxisKey = 'versionData.version'
+      myChart.config.options.parsing.yAxisKey = 'versionData.users'
+
+      const vColor = []
+      const vBorderColor = []
+      const vUsers = []
+      const vLabels = browserData[browser].versionData.map(labels => {
+        vColor.push(browserData[browser].color)
+        vBorderColor.push(browserData[browser].borderColor)
+        vUsers.push(labels.users)
+        return labels.version
+      })
+      console.log(vLabels, vUsers, vColor, vBorderColor)
+      myChart.config.data.datasets[0].data = vUsers
+      myChart.config.data.labels = vLabels
+      myChart.config.data.datasets[0].backgroundColor = vColor
+      myChart.config.data.datasets[0].borderColor = vBorderColor
+      myChart.config.data.datasets[0].label = browserData[browser].browser
+      myChart.update()   
+    }
+
+    //go back to previous chart
+    function resetChart(){
+      console.log('clicked reset button')
+      myChart.config.options.parsing.xAxisKey = 'browser'
+      myChart.config.options.parsing.yAxisKey = 'marketshare'
+
+      const bColor = []
+      const bBorderColor = []
+      const bMarketshare = []
+      const bLabels = browserData.map(browser=>{
+        bColor.push(browser.color)
+        bMarketshare.push(browser.marketshare)
+        return browser.browser
+      })
+      myChart.config.data.datasets[0].backgroundColor = bColor
+      myChart.config.data.datasets[0].borderColor = bBorderColor
+      myChart.config.data.labels = bLabels
+      myChart.config.data.datasets[0].label = 'Market Share of Browsers'
+      myChart.config.data.datasets[0].data = bMarketshare
+      
+      myChart.update()
+    } 
+
+    // show a pointer when the mouses moves on the back button function
+    function mousemoveHandler(canvas, mousemove){
+      const x = mousemove.offsetX
+      const y = mousemove.offsetY
+      if(myChart.config.data.datasets[0].label != 'Market Share of Browsers'){
+        //console.log(mousemove.offsetY)
+        console.log(coordinates)
+        if(x > coordinates.left && x < coordinates.right && y > coordinates.top && y < coordinates.bottom ){
+          canvas.style.cursor = 'pointer'
+        }else{
+          canvas.style.cursor = 'default'
+        }
+      }
+      
+    }
+
+
+    // function that shows the previous chart when we click on the back button
+    function clickButtonHandler(canvas, click){
+      const x = click.offsetX
+      const y = click.offsetY
+      if(myChart.config.data.datasets[0].label != 'Market Share of Browsers'){
+        if(x > coordinates.left && x < coordinates.right && y > coordinates.top && y < coordinates.bottom){
+          resetChart()
+        }
+      }
+      
+    }
+
+    ctx.onclick = clickHandler
+
+    //when we move the cursor on the back button it becomes a pointer
+    ctx.addEventListener('mousemove', (e) => {
+      myChart.resize()
+      mousemoveHandler(ctx, e)
+    })
+
+    //when we click on the back button the canvas shows the previous chart
+    ctx.addEventListener('click', (e) => {
+      myChart.resize()
+      clickButtonHandler(ctx, e)
+    })
+
+    Chart.register(resetButton)
+    
+    </script>
+
+  </body>
+</html>
